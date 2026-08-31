@@ -14,7 +14,7 @@ Alpha11 is not part of Cyber Pulse.
 ## Team
 
 - Chauke Ntsakiso (Darthwolf) — CEO & Main Developer
-- Riyanasu Fuela — Researcher & first mind behind StudyLock
+- rhandzu Fuela — Researcher & first mind behind StudyLock
 - Dziani Nhlanhla — StudyLock partner
 - Maluleke Nkateko — Mind behind Star AI
 - Themba Fuela — Mind behind Guardian AI
