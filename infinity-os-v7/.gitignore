@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+desktop/firebase_config.json
+desktop/user_data/
+android/.gradle/
+android/local.properties
+android/app/google-services.json
+android/app/build/
+android/build/
+.idea/
+*.iml
