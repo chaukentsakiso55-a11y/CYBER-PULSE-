@@ -1,44 +1,60 @@
-name: Infinity OS V7 CI
+name: Cyber Pulse Website CI
 
 on:
   push:
-    paths:
-      - 'infinity-os-v7/**'
-      - '.github/workflows/infinity-os-v7-ci.yml'
+    branches:
+      - main
   pull_request:
-    paths:
-      - 'infinity-os-v7/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cyber-pulse-site-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  desktop:
-    runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: infinity-os-v7/desktop
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - run: python -m compileall .
-
-  android:
+  validate:
+    name: Validate website
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infinity-os-v7/android
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
-      - name: Create CI Firebase config
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate required files and formats
+        shell: bash
         run: |
-          cat > app/google-services.json <<'JSON'
-          {"project_info":{"project_number":"1234567890","project_id":"infinity-os-ci","storage_bucket":"infinity-os-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1234567890:android:abcdef123456","android_client_info":{"package_name":"com.cyberpulse.infinityos"}},"api_key":[{"current_key":"AIzaSyCIPlaceholderNotForProduction123456789"}]}],"configuration_version":"1"}
-          JSON
-      - run: gradle :app:assembleDebug --stacktrace
+          set -euo pipefail
+
+          for file in index.html firebase.json sitemap.xml robots.txt; do
+            if [ ! -s "$file" ]; then
+              echo "::error file=$file::Required website file is missing or empty"
+              exit 1
+            fi
+          done
+
+          python3 - <<'PY'
+          import json
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          class SiteHTMLParser(HTMLParser):
+              pass
+
+          html_path = Path("index.html")
+          html = html_path.read_text(encoding="utf-8")
+          lowered = html.lower()
+
+          if "<html" not in lowered or "<head" not in lowered or "<body" not in lowered:
+              raise SystemExit("index.html must include html, head, and body elements")
+
+          SiteHTMLParser().feed(html)
+
+          with Path("firebase.json").open(encoding="utf-8") as stream:
+              json.load(stream)
+
+          ElementTree.parse("sitemap.xml")
+          print("Cyber Pulse website validation passed")
+          PY
