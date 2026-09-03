@@ -88,4 +88,4 @@ app/src/main/java/za/co/cyberpulse/communitygadget/
 
 ## Ownership
 
-Community Gadget is a Cyber Pulse project based on the community-safety concept led by Mawela Nkoriso, with software development led by Ntsakiso Chauke (Darthwolf).
+Community Gadget is a Cyber Pulse project based on the community-safety concept led by Mawela Nkuriso, with software development led by Ntsakiso Chauke (Darthwolf).
