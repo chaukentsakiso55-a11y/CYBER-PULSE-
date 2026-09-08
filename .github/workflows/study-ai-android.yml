@@ -3,7 +3,7 @@ name: Study AI Android APK
 on:
   pull_request:
     paths:
-      - 'study-ai-android-source.zip'
+      - 'StudyAI-Android/**'
       - '.github/workflows/study-ai-android.yml'
   workflow_dispatch:
 
@@ -17,8 +17,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract StudyAI source
-        run: unzip -q study-ai-android-source.zip -d build-src
+      - name: Reassemble StudyAI HTML
+        run: |
+          mkdir -p StudyAI-Android/app/src/main/assets
+          cat StudyAI-Android/app/src/main/assets_parts/part*.html > StudyAI-Android/app/src/main/assets/study-app.html
+          test "$(sha256sum StudyAI-Android/app/src/main/assets/study-app.html | awk '{print $1}')" = "6dc8a3d96ca318857c5e9a969b4552f740fa2df1a1221c5974f837401c3098a5"
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -30,7 +33,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK 35
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        run: yes | sdkmanager --licenses >/dev/null && sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -38,12 +41,15 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build debug APK
-        working-directory: build-src/StudyAI-Android
+        working-directory: StudyAI-Android
         run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK exists
+        run: test -s StudyAI-Android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload StudyAI APK
         uses: actions/upload-artifact@v4
         with:
           name: StudyAI-debug-apk
-          path: build-src/StudyAI-Android/app/build/outputs/apk/debug/app-debug.apk
+          path: StudyAI-Android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
