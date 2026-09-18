@@ -13,21 +13,21 @@ html = html.replace("\n      <button class=\"social-btn\" onclick=\"socialLogin(
 html = html.replace("\n      <button class=\"social-btn\" onclick=\"socialLogin('Apple')\"><span>🍎</span> Continue with Apple</button>", '')
 html = html.replace("\n      <button class=\"social-btn\" onclick=\"socialLogin('Apple')\"><span>🍎</span> Sign up with Apple</button>", '')
 html = html.replace('or sign in with email', 'Sign in with email').replace('or create with email', 'Create account with email')
-html = html.replace('StudyAI ✦', 'Study AI').replace('Install StudyAI', 'Install Study AI')
-html = html.replace('📲 Install StudyAI on your iPhone', '📲 Install Study AI on your iPhone')
-html = html.replace('StudyAI connected', 'Study AI connected')
-html = html.replace('StudyAI installed successfully! 🎉', 'Study AI installed successfully! 🎉')
-html = html.replace('Installing StudyAI… 🚀', 'Installing Study AI… 🚀')
-html = html.replace('content="StudyAI"', 'content="Study AI"').replace('<title>StudyAI ✦</title>', '<title>Study AI</title>')
+html = html.replace('StudyAI ✦', 'StudyAI').replace('Install Study AI', 'Install StudyAI').replace('Install StudyAI', 'Install StudyAI')
+html = html.replace('📲 Install Study AI on your iPhone', '📲 Install StudyAI on your iPhone').replace('📲 Install StudyAI on your iPhone', '📲 Install StudyAI on your iPhone')
+html = html.replace('Study AI connected', 'StudyAI connected')
+html = html.replace('Study AI installed successfully! 🎉', 'StudyAI installed successfully! 🎉')
+html = html.replace('Installing Study AI… 🚀', 'Installing StudyAI… 🚀')
+html = html.replace('content="Study AI"', 'content="StudyAI"').replace('<title>Study AI</title>', '<title>StudyAI</title>').replace('<title>StudyAI ✦</title>', '<title>StudyAI</title>')
 
 about = '''
     <!-- About App -->
     <div class="card">
       <div class="settings-section-title">About App</div>
       <div class="settings-row" style="display:block">
-        <div class="settings-label" style="margin-bottom:8px">Study AI</div>
+        <div class="settings-label" style="margin-bottom:8px">StudyAI</div>
         <div class="settings-desc" style="line-height:1.6;margin-bottom:10px">
-          Study AI is a Cyber Pulse educational app designed to help learners study smarter with AI support, subject hubs, quizzes, and guided learning content.
+          StudyAI is a Cyber Pulse educational app designed to help learners study smarter with AI support, subject hubs, quizzes, and guided learning content.
         </div>
         <div class="settings-desc" style="line-height:1.6;margin-bottom:10px">
           <strong>Owner:</strong> Cyber Pulse<br>
@@ -58,7 +58,7 @@ if 'settings-section-title">About App<' not in html:
     pattern = r'\n\s*<div style="text-align:center;color:var\(--dim\);font-size:12px;margin-bottom:24px">.*?</div>\n\s*</div>\n</div>\n\n<!-- ════════════════ SCRIPT'
     repl = '\n' + about + '''
     <div style="text-align:center;color:var(--dim);font-size:12px;margin-bottom:24px">
-      Study AI &nbsp;·&nbsp; v1.2.0 &nbsp;·&nbsp; A Cyber Pulse app built by Ntsakiso Chauke (Darthwolf)
+      StudyAI &nbsp;·&nbsp; v1.2.0 &nbsp;·&nbsp; A Cyber Pulse app built by Ntsakiso Chauke (Darthwolf)
     </div>
   </div>
 </div>
@@ -77,7 +77,7 @@ if 'Content-Security-Policy' not in html:
 htmlp.write_text(html, encoding='utf-8')
 
 manifest = manifestp.read_text(encoding='utf-8')
-manifest = manifest.replace('android:label="StudyAI"', 'android:label="Study AI"')
+manifest = manifest.replace('android:label="Study AI"', 'android:label="StudyAI"')
 manifest = manifest.replace('android:allowBackup="true"', 'android:allowBackup="false"')
 manifest = manifest.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
 manifestp.write_text(manifest, encoding='utf-8')
