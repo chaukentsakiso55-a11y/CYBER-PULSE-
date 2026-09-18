@@ -1,6 +1,12 @@
 name: Study AI Android APK
 
 on:
+  push:
+    branches:
+      - study-ai-android-build
+    paths:
+      - 'studyai-build/**'
+      - '.github/workflows/study-ai-android.yml'
   pull_request:
     paths:
       - 'studyai-build/**'
