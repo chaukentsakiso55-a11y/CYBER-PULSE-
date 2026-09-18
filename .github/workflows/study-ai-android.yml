@@ -1,0 +1,101 @@
+name: Study AI Android APK
+
+on:
+  push:
+    branches:
+      - study-ai-android-build
+    paths:
+      - 'studyai-build/**'
+      - '.github/workflows/study-ai-android.yml'
+  pull_request:
+    paths:
+      - 'studyai-build/**'
+      - '.github/workflows/study-ai-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct exact StudyAI source
+        run: |
+          rm -f /tmp/studyai.zip
+          for f in studyai-build/zip_b64_*.txt; do
+            base64 -d "$f" >> /tmp/studyai.zip
+          done
+          echo "a8e94bed305e4f74e6ccb9eeee283f98df20ca71677d4332c24528b9e63ae0cc  /tmp/studyai.zip" | sha256sum -c -
+          rm -rf build-src
+          mkdir -p build-src
+          unzip -q /tmp/studyai.zip -d build-src
+
+      - name: Apply Firebase and Guest mode
+        run: |
+          python studyai-build/patch_firebase_guest.py
+          grep -q "Continue as Guest" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "signInWithPassword" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "study-ai-d5141" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+
+      - name: Apply real subject content pages
+        run: |
+          cat studyai-build/subject_patch_*.b64 | base64 -d | gzip -d > /tmp/patch_subject_hubs.py
+          echo "1e9e630303f4a5983b76bf373a20809cd26c599bae44d840028d07bffd811609  /tmp/patch_subject_hubs.py" | sha256sum -c -
+          python /tmp/patch_subject_hubs.py
+          grep -q "screen-subject" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "openSubjectPage" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "Continue as Guest" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "signInWithPassword" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "World War I" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "Kinematics" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+
+      - name: Apply production hardening
+        run: |
+          python studyai-build/patch_production.py
+          grep -q "Study AI" build-src/StudyAI-Android/app/src/main/AndroidManifest.xml
+          grep -q "About App" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "Continue as Guest" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+          grep -q "GEMINI_API_KEY" build-src/StudyAI-Android/app/src/main/assets/study-app.html
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK 35
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build release APK and AAB
+        working-directory: build-src/StudyAI-Android
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        run: gradle :app:assembleRelease :app:bundleRelease --stacktrace
+
+      - name: Verify release outputs
+        run: |
+          test -s build-src/StudyAI-Android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s build-src/StudyAI-Android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload Study AI release outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: StudyAI-v1.2.0-release-unsigned
+          path: |
+            build-src/StudyAI-Android/app/build/outputs/apk/release/app-release-unsigned.apk
+            build-src/StudyAI-Android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
