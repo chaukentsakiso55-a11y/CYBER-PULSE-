@@ -1,0 +1,38 @@
+name: Export Android Signing Tools
+
+on:
+  push:
+    branches:
+      - study-ai-android-build
+    paths:
+      - '.github/workflows/export-android-signing-tools.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Android SDK 35 tools
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;35.0.0"
+
+      - name: Package signing tools
+        run: |
+          mkdir -p signing-tools/lib
+          cp /usr/local/lib/android/sdk/build-tools/35.0.0/apksigner signing-tools/
+          cp /usr/local/lib/android/sdk/build-tools/35.0.0/zipalign signing-tools/
+          cp /usr/local/lib/android/sdk/build-tools/35.0.0/lib/apksigner.jar signing-tools/lib/
+          chmod +x signing-tools/apksigner signing-tools/zipalign
+
+      - name: Upload signing tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-signing-tools-35
+          path: signing-tools/
+          if-no-files-found: error
