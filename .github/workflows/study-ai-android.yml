@@ -43,7 +43,7 @@ jobs:
 
       - name: Apply real subject content pages
         run: |
-          base64 -d studyai-build/patch_subject_hubs.py.gz.b64 | gzip -d > /tmp/patch_subject_hubs.py
+          cat studyai-build/subject_patch_*.b64 | base64 -d | gzip -d > /tmp/patch_subject_hubs.py
           echo "1e9e630303f4a5983b76bf373a20809cd26c599bae44d840028d07bffd811609  /tmp/patch_subject_hubs.py" | sha256sum -c -
           python /tmp/patch_subject_hubs.py
           grep -q "screen-subject" build-src/StudyAI-Android/app/src/main/assets/study-app.html
